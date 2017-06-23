@@ -1,0 +1,20 @@
+{
+	"name":"Toggl-Timesheet",
+	"version":"1.0",
+	"manifest_version":2,
+	"description":"Fill out Bridge's timesheet from toggl",
+	"page_action":{
+		"default_icon":"icon.png",
+		"default_title":"Toggl-Timesheet"
+	},
+	"background" : {
+		"scripts": ["background.js"],
+	"persistent": false
+	},
+	"permissions":[
+		"tabs",
+		"https://www.toggl.com/*"],
+	"icons":{
+		"128":"icon.png"
+	}
+}
