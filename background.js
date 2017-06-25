@@ -1,6 +1,7 @@
 /*
 *	Author: Ahadu Tsegaye: 23/06/2017
 */
+var _ENV_ = 'dev';
 
 var toggl_api_uri = "https://www.toggl.com/api/v8/";
 var timesheet = Array();
@@ -9,9 +10,12 @@ var projects = Array();
 var workspaces = Array();
 var time_entries = Array();
 
+var timesheetDate = new Date();
+var timesheetStartTime = 'T01:00:00+00:00';
+var timesheetEndTime = 'T23:59:59+00:00';
 
 function setAuthorization(request){
-	request.setRequestHeader("Authorization","Basic "+ btoa("insert_your_token_here:api_token"))
+	request.setRequestHeader("Authorization","Basic "+ btoa("99b6682587ffd8810ca4dae35a21bb5e:api_token"))
 }
 
 function showProgressMsg(requestname, param){
@@ -26,15 +30,6 @@ function showAbortMsg(e){
 	console.log("The operation was interrupted by user: "+e)
 }
 
-function check(tab_id, data, tab){
-	console.log("hello")
-	if(tab.url.indexOf('internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow')>-1){
-		chrome.pageAction.show(tab_id);
-		console.log(chrome.extension.getURL('/data/config.json'));
-	} else {
-		console.log("not in timesheet page");
-	}
-}
 
 function loadWorkspaces(){
 	xhttpw = new XMLHttpRequest();
@@ -62,7 +57,7 @@ function processWorkspaces(){
 		loadTimeEntries();
 
 	} else {
-		console.log("workspaces request loaded with state: "+xhttpw.readyState+", status: "+xhttpw.status);
+	//	console.log("workspaces request loaded with state: "+xhttpw.readyState+", status: "+xhttpw.status);
 	}
 }
 
@@ -90,7 +85,7 @@ function processProject(){
 			projects.push(project);
 		}
 	} else {
-		console.log("project request loaded with state: "+xhttpp.readyState+", status: "+xhttpp.status);
+		//console.log("project request loaded with state: "+xhttpp.readyState+", status: "+xhttpp.status);
 	}
 }
 
@@ -117,13 +112,15 @@ function processClients(){
 			clients.push(client);
 		}
 	} else {
-		console.log("project request loaded with state: "+xhttpc.readyState+", status: "+xhttpc.status);
+	//	console.log("project request loaded with state: "+xhttpc.readyState+", status: "+xhttpc.status);
 	}
 }
 
+
+
 function loadTimeEntries() {
-	start_date = "2017-06-14T07:00:00+00:00";
-	end_date = "2017-06-14T23:59:00+00:00";
+	start_date = formatDate(timesheetDate,'ymd','-')+timesheetStartTime;//"2017-06-14T07:59:00+00:00";
+	end_date = formatDate(timesheetDate,'ymd','-')+timesheetEndTime;//"2017-06-14T23:59:00+00:00";
 	params = "start_date=" + encodeURIComponent(start_date) + "&"+
 			 "end_date=" + encodeURIComponent(end_date);
 	xhttpt = new XMLHttpRequest();
@@ -152,7 +149,7 @@ function processTimeEntries() {
 		}
 		assembleTimeSheet();
 	} else {
-		console.log("time entries request loaded with state: "+xhttp.readyState+", status: "+xhttp.status);
+		//console.log("time entries request loaded with state: "+xhttp.readyState+", status: "+xhttp.status);
 	}
 }
 
@@ -173,16 +170,13 @@ function getNameById (list, aid, idName) {
 	}
 	return null;
 }
+var currentTab = Object();
 
 function assembleTimeSheet(){
-	/*console.log(workspaces)
-	console.log(clients)
-	console.log(projects)
-	console.log(time_entries)*/
 	for (i=0; i < time_entries.length; i++){
 		var timesheet_entry = new Object();
-		timesheet_entry.date = "14/06/2017"; 
-		timesheet_entry.activity = time_entries[i]["tags"];//tags
+		timesheet_entry.date = formatDate(timesheetDate,'dmy','/'); 
+		timesheet_entry.activity = time_entries[i]["tags"][0];//tags
 		timesheet_entry.company = getNameById(clients,time_entries[i]["wid"], "wid");//client
 		timesheet_entry.job_order = getNameById(workspaces,time_entries[i]["wid"], "id");//workspace
 		timesheet_entry.sub_job_order = getNameById(projects,time_entries[i]["pid"], "id");//project
@@ -190,7 +184,50 @@ function assembleTimeSheet(){
 		timesheet_entry.number_of_hours = time_entries[i]["duration"];//duration
 		timesheet.push(timesheet_entry)	
 	}
-	console.log(timesheet);
+	submitTimesheet();
+	//chrome.tabs.sendMessage(currentTab.id, {text: 'report_back'}, submitTimesheet);
 }
 
-chrome.tabs.onUpdated.addListener(loadWorkspaces);
+
+
+function submitTimesheet(){
+	console.log(timesheet);
+	chrome.tabs.executeScript(null, {
+	    code: 'var timesheet = ' + JSON.stringify(timesheet)
+	}, function() {
+	    chrome.tabs.executeScript(null, {file: 'content.js'});
+	}); 	
+}
+
+
+function formatDate(adate, order, separator){
+	var dd = adate.getDate();
+	var mm = adate.getMonth()+1; //January is 0!
+
+	var yyyy = adate.getFullYear();
+	if(dd<10){
+	    dd='0'+dd;
+	} 
+	if(mm<10){
+	    mm='0'+mm;
+	} 
+	if (order==='dmy'){
+		return dd + separator + mm + separator + yyyy;
+	} else if (order==='ymd') {
+		return yyyy + separator + mm + separator + dd;
+	}	
+}
+
+
+chrome.tabs.onUpdated.addListener(function(){
+	chrome.tabs.getSelected(null, function(tab){
+		bridgeUrl = 'internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow';
+		if (_ENV_==='dev'){
+			bridgeUrl = 'file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html';
+		} 
+		if(tab.url === bridgeUrl){
+			currentTab = tab;
+    		loadWorkspaces();
+    	}
+	});
+});

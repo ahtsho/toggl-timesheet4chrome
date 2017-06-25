@@ -3,6 +3,12 @@
 	"version":"1.0",
 	"manifest_version":2,
 	"description":"Fill out Bridge's timesheet from toggl",
+	"content_scripts": [
+		{
+    		"matches": ["file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html"],
+    		"js": ["content.js"]
+  		}
+  	],
 	"page_action":{
 		"default_icon":"icon.png",
 		"default_title":"Toggl-Timesheet"
@@ -13,7 +19,8 @@
 	},
 	"permissions":[
 		"tabs",
-		"https://www.toggl.com/*"],
+		"https://www.toggl.com/*", 
+		"file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html"],
 	"icons":{
 		"128":"icon.png"
 	}
