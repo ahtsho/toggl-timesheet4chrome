@@ -15,7 +15,7 @@ var timesheetStartTime = 'T01:00:00+00:00';
 var timesheetEndTime = 'T23:59:59+00:00';
 
 function setAuthorization(request){
-	request.setRequestHeader("Authorization","Basic "+ btoa("99b6682587ffd8810ca4dae35a21bb5e:api_token"))
+	request.setRequestHeader("Authorization","Basic "+ btoa("insert_your_token_here:api_token"))
 }
 
 function showProgressMsg(requestname, param){
@@ -29,7 +29,6 @@ function showErrorMsg(e){
 function showAbortMsg(e){
 	console.log("The operation was interrupted by user: "+e)
 }
-
 
 function loadWorkspaces(){
 	xhttpw = new XMLHttpRequest();
@@ -55,7 +54,6 @@ function processWorkspaces(){
 			workspaces.push(workspace);
 		}
 		loadTimeEntries();
-
 	} else {
 	//	console.log("workspaces request loaded with state: "+xhttpw.readyState+", status: "+xhttpw.status);
 	}
@@ -115,8 +113,6 @@ function processClients(){
 	//	console.log("project request loaded with state: "+xhttpc.readyState+", status: "+xhttpc.status);
 	}
 }
-
-
 
 function loadTimeEntries() {
 	start_date = formatDate(timesheetDate,'ymd','-')+timesheetStartTime;//"2017-06-14T07:59:00+00:00";
@@ -181,43 +177,58 @@ function assembleTimeSheet(){
 		timesheet_entry.job_order = getNameById(workspaces,time_entries[i]["wid"], "id");//workspace
 		timesheet_entry.sub_job_order = getNameById(projects,time_entries[i]["pid"], "id");//project
 		timesheet_entry.description = time_entries[i]["description"];//description
-		timesheet_entry.number_of_hours = time_entries[i]["duration"];//duration
+		timesheet_entry.number_of_hours = convertSecondsToSexagesimals(time_entries[i]["duration"]);//duration
 		timesheet.push(timesheet_entry)	
 	}
 	submitTimesheet();
 	//chrome.tabs.sendMessage(currentTab.id, {text: 'report_back'}, submitTimesheet);
 }
 
-
-
 function submitTimesheet(){
 	console.log(timesheet);
 	chrome.tabs.executeScript(null, {
-	    code: 'var timesheet = ' + JSON.stringify(timesheet)
+		code: 'var timesheet = ' + JSON.stringify(timesheet)
 	}, function() {
-	    chrome.tabs.executeScript(null, {file: 'content.js'});
+		chrome.tabs.executeScript(null, {file: 'content.js'});
 	}); 	
 }
-
 
 function formatDate(adate, order, separator){
 	var dd = adate.getDate();
 	var mm = adate.getMonth()+1; //January is 0!
-
 	var yyyy = adate.getFullYear();
 	if(dd<10){
-	    dd='0'+dd;
-	} 
+		dd='0'+dd;
+	}
 	if(mm<10){
-	    mm='0'+mm;
-	} 
+		mm='0'+mm;
+	}
 	if (order==='dmy'){
 		return dd + separator + mm + separator + yyyy;
 	} else if (order==='ymd') {
 		return yyyy + separator + mm + separator + dd;
-	}	
+	}
 }
 
+function convertSecondsToSexagesimals(durationSec){
+	var h_mtmp =  (durationSec / 3600).toString().split('.');
+	var m = convertToQuarters(parseInt(h_mtmp[1].slice(0,2)));
+	return h_mtmp[0] + "," + m;
+}
+
+function convertToQuarters(minutes){
+	var m = -1;
+	if(minutes < 25){
+		m = 0;
+	} else if(minutes < 50){
+		m = 25;
+	} else if (minutes < 75){
+		m = 50;
+	} else if (minutes < 100){
+		m = 75;
+	}
+	return m;
+}
 
 chrome.tabs.onUpdated.addListener(function(){
 	chrome.tabs.getSelected(null, function(tab){
@@ -227,7 +238,7 @@ chrome.tabs.onUpdated.addListener(function(){
 		} 
 		if(tab.url === bridgeUrl){
 			currentTab = tab;
-    		loadWorkspaces();
-    	}
+			loadWorkspaces();
+		}
 	});
 });

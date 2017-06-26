@@ -30,7 +30,7 @@ for (var i = 0; i < timesheet.length; i++) {
 	setSelectOptionByText('subJobOrdersComboBox',timesheet[i].sub_job_order);
 	document.getElementById('description').value=timesheet[i].description;
 	document.getElementById('numberOfHour').value=timesheet[i].number_of_hours;
-	document.getElementsByClassName('portlet-form-button')[0].click();
+	//document.getElementsByClassName('portlet-form-button')[0].click();
 }
 
 
