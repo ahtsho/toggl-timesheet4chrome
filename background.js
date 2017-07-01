@@ -238,7 +238,37 @@ chrome.tabs.onUpdated.addListener(function(){
 		} 
 		if(tab.url === bridgeUrl){
 			currentTab = tab;
-			loadWorkspaces();
+			//loadWorkspaces();
 		}
 	});
 });
+
+chrome.runtime.onMessage.addListener(function(request) {
+	if (request.type === 'change_date') {
+		chrome.tabs.create({
+			url: chrome.extension.getURL('dialog.html'),
+			active: false
+		}, function(tab) {
+			// After the tab has been created, open a window to inject the tab
+			chrome.windows.create({
+				tabId: tab.id,
+				type: 'popup',
+				focused: true
+				// incognito, top, left, ...
+			});
+		});
+	}
+});
+
+function setDate(datestring) {
+	if(datestring){
+		console.log("you inserted "+datestring);
+		var inputdate = new Date(parseInt(datestring.substring(0,4)), 
+			parseInt(datestring.substring(5,7))-1,
+			parseInt(datestring.substring(8,10)));
+		timesheetDate = inputdate;
+	} else {
+		console.log(timesheetDate);
+	}
+	loadWorkspaces();
+};
