@@ -2,8 +2,10 @@
 *	Author: Ahadu Tsegaye: 23/06/2017
 */
 var _ENV_ = 'dev';
-
+var api_token = '';
 var toggl_api_uri = "https://www.toggl.com/api/v8/";
+var timesheetURL = 'internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow';
+var bridgedomain = 'http://internal1.bridgeconsulting.it';
 var timesheet = Array();
 var clients = Array();
 var projects = Array();
@@ -15,7 +17,7 @@ var timesheetStartTime = 'T01:00:00+00:00';
 var timesheetEndTime = 'T23:59:59+00:00';
 
 function setAuthorization(request){
-	request.setRequestHeader("Authorization","Basic "+ btoa("insert_your_token_here:api_token"))
+	request.setRequestHeader("Authorization","Basic "+ btoa(api_token+":api_token"))
 }
 
 function showProgressMsg(requestname, param){
@@ -42,6 +44,7 @@ function loadWorkspaces(){
 }
 
 function processWorkspaces(){
+	console.log(xhttpw.status);
 	if(xhttpw.readyState === 4 && xhttpw.status === 200){
 	//	console.log("workspaces request successfully loaded");
 		var respj = JSON.parse(xhttpw.responseText);
@@ -54,8 +57,10 @@ function processWorkspaces(){
 			workspaces.push(workspace);
 		}
 		loadTimeEntries();
+	} else if (xhttpw.status==403){
+		alert("Your token "+api_token+" dosen't seem to be valid. Insert another one please.")
 	} else {
-	//	console.log("workspaces request loaded with state: "+xhttpw.readyState+", status: "+xhttpw.status);
+		console.log("workspaces request loaded with state: "+xhttpw.readyState+", status: "+xhttpw.status);
 	}
 }
 
@@ -190,7 +195,7 @@ function submitTimesheet(){
 		code: 'var timesheet = ' + JSON.stringify(timesheet)
 	}, function() {
 		chrome.tabs.executeScript(null, {file: 'content.js'});
-	}); 	
+	});
 }
 
 function formatDate(adate, order, separator){
@@ -230,13 +235,14 @@ function convertToQuarters(minutes){
 	return m;
 }
 
+
+
 chrome.tabs.onUpdated.addListener(function(){
 	chrome.tabs.getSelected(null, function(tab){
-		bridgeUrl = 'internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow';
 		if (_ENV_==='dev'){
-			bridgeUrl = 'file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html';
+			timesheetURL = 'file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html';
 		} 
-		if(tab.url === bridgeUrl){
+		if(tab.url === timesheetURL){
 			currentTab = tab;
 			//loadWorkspaces();
 		}
@@ -260,15 +266,42 @@ chrome.runtime.onMessage.addListener(function(request) {
 	}
 });
 
-function setDate(datestring) {
-	if(datestring){
-		console.log("you inserted "+datestring);
-		var inputdate = new Date(parseInt(datestring.substring(0,4)), 
-			parseInt(datestring.substring(5,7))-1,
-			parseInt(datestring.substring(8,10)));
-		timesheetDate = inputdate;
+
+function setUserInput(dateInput, tokenInput) {
+	if(tokenInput){
+		api_token = tokenInput;// using just inserted token and saving it for a year
+		chrome.cookies.set({ url: bridgedomain, 
+			name: "tkn", 
+			value: tokenInput, 
+			expirationDate: (new Date().getTime()/1000) + 3600 * 24 * 365 
+		});
 	} else {
-		console.log(timesheetDate);
+		chrome.cookies.get({"url": bridgedomain, "name": 'tkn'}, function(cookieToken) {
+			if(cookieToken) {
+				console.log("token found: "+cookieToken.value);
+				api_token = cookieToken.value;
+			} else {
+				alert("No token found. Please insert your Toggl token");
+			}
+		});
 	}
-	loadWorkspaces();
-};
+	// start the whole thing
+	if(api_token && dateInput){
+		console.log("creating timesheet for date "+dateInput);
+		timesheetDate = new Date(parseInt(dateInput.substring(0,4)), 
+			parseInt(dateInput.substring(5,7))-1,
+			parseInt(dateInput.substring(8,10)));
+		loadWorkspaces();
+	}
+}
+
+
+function getCookies(domain, name, callback) {
+	console.log("getCookies");
+	chrome.cookies.get({"url": domain, "name": name}, function(cookie) {
+		if(callback) {
+			callback(cookie.value);
+		}
+	});
+}
+

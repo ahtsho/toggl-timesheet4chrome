@@ -19,6 +19,9 @@
 	},
 	"permissions":[
 		"tabs",
+		"cookies",
+		"http://internal1.bridgeconsulting.it/",
+		"storage",
 		"https://www.toggl.com/*", 
 		"file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html"],
 	"icons":{
