@@ -276,12 +276,12 @@ chrome.runtime.onMessage.addListener(function(request) {
 			url: chrome.extension.getURL('dialog.html'),
 			active: false
 		}, function(tab) {
-			// After the tab has been created, open a window to inject the tab
 			chrome.windows.create({
 				tabId: tab.id,
 				type: 'popup',
-				focused: true
-				// incognito, top, left, ...
+				focused: true,
+				height:400,
+				width:400
 			});
 		});
 	}
@@ -305,35 +305,6 @@ function manageTokenAndDate(dateInput, tokenInput){
 	});
 }
 
-/*
-function setUserInput(dateInput, tokenInput) {
-	chrome.cookies.get({"url": bridgedomain, "name": 'tkn'}, function(cookieToken) {
-		if(cookieToken) {
-			console.log("token found: "+cookieToken.value);
-			api_token = cookieToken.value;
-		} else {
-			if(tokenInput){
-				api_token = tokenInput;// using just inserted token and saving it for a year
-				chrome.cookies.set({ url: bridgedomain, 
-					name: "tkn", 
-					value: tokenInput, 
-					expirationDate: (new Date().getTime()/1000) + 3600 * 24 * 365 
-				});
-			} else {
-				alert("No token found. Please insert your Toggl token");
-			}
-		}
-	});
-	// start the whole thing
-	if(api_token && dateInput){
-		console.log("creating timesheet for date "+dateInput);
-		timesheetDate = new Date(parseInt(dateInput.substring(0,4)), 
-			parseInt(dateInput.substring(5,7))-1,
-			parseInt(dateInput.substring(8,10)));
-		loadWorkspaces();
-	}
-}
-*/
 function createTimesheet(datestring){
 	console.log("createTimesheet for "+datestring);
 	if(api_token){

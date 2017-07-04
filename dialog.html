@@ -1,8 +1,33 @@
-<!DOCTYPE html><html><head><title>Change date</title></head><body>
-<form>
-	<input id="token" type="string" placeholder="toggl_token">
-	<input id="new_date" type="date">
-	<input type="submit" value="OK">
-</form>
-<script src="dialog.js"></script>
-</body></html>
+<!DOCTYPE html>
+<html><head><title>Toggl-timesheet OPTIONS</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="style.css">
+	<!--script src="jquery.js"></script>
+	<script src="jqueryUI.js"></script>
+	<script>
+		$( function() {
+		$( "#datepicker" ).datepicker();
+		} );
+	</script-->
+</head>
+<body>
+	<form>
+		<!--input id="token" type="string" placeholder="toggl_token"-->
+		<!--input id="new_date" type="date">
+		<input type="submit" value="OK"-->
+		<div class="form">
+			<div class="form-group">
+				<label for="new_date">Date:</label>
+				<input type="date" class="form-control input-lg" id="new_date">
+			</div>
+			<!--span class="help-block">This is some help text...</span-->
+			<div class="form-group">
+				<label for="token">Toggl Token:</label>
+				<input type="password" class="form-control input-lg" id="token">
+			</div>
+			<button type="button" class="btn btn-primary btn-block btn-lg">Button 1</button>
+		</div>
+	</form>
+	<script src="dialog.js"></script>
+</body>
+</html>
