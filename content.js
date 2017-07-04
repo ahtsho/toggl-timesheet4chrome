@@ -6,9 +6,22 @@ function setSelectOptionByText(selectid, text){
 			break;
 		}
 	}
+
 	if(select.selectedIndex === 0){
 		select.selectedIndex = 49;//"VARIE - DA DESCRIVERE"
 	}
+}
+
+function setSubJObOrderSelect(text){
+	split = text.split("[");
+	var optValue = split[1].replace("]",""); 
+	var optText = split[0];
+	subJobOrders = document.getElementById('subJobOrdersComboBox')
+	var option = document.createElement("option");
+	option.value = optValue;
+	option.text = optText;
+	subJobOrders.add(option, 0);
+	subJobOrders.selectedIndex = 0;
 }
 
 for (var i = 0; i < timesheet.length; i++) {
@@ -16,7 +29,7 @@ for (var i = 0; i < timesheet.length; i++) {
 	setSelectOptionByText('activityComboBox',timesheet[i].activity);
 	setSelectOptionByText('companyComboBox',timesheet[i].company);
 	setSelectOptionByText('jobOrdersComboBox',timesheet[i].job_order);
-	setSelectOptionByText('subJobOrdersComboBox',timesheet[i].sub_job_order);
+	setSubJObOrderSelect(timesheet[i].sub_job_order);
 	document.getElementById('description').value=timesheet[i].description;
 	document.getElementById('numberOfHour').value=timesheet[i].number_of_hours;
 	//document.getElementsByClassName('portlet-form-button')[0].click();

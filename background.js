@@ -16,8 +16,8 @@ var timesheetDate = new Date();
 var timesheetStartTime = 'T01:00:00+00:00';
 var timesheetEndTime = 'T23:59:59+00:00';
 
-function setAuthorization(request){
-	request.setRequestHeader("Authorization","Basic "+ btoa(api_token+":api_token"))
+function setAuthorization(request, validToken){
+	request.setRequestHeader("Authorization","Basic "+ btoa(validToken+":api_token"))
 }
 
 function showProgressMsg(requestname, param){
@@ -32,10 +32,27 @@ function showAbortMsg(e){
 	console.log("The operation was interrupted by user: "+e)
 }
 
+function testTokenAndStart(tokenToTest, dateToStartWith){
+	console.log("testing token");
+	xhttpw = new XMLHttpRequest();
+	xhttpw.open("GET", toggl_api_uri+"workspaces", true);
+	setAuthorization(xhttpw, tokenToTest)
+	xhttpw.addEventListener("load", function(){
+		if(xhttpw.readyState === 4 && xhttpw.status === 200){
+			api_token = tokenToTest;
+			saveTokenForAYear(tokenToTest);
+			createTimesheet(dateToStartWith);
+		} else if (xhttpw.status==403){
+			alert("Your token "+tokenToTest+" dosen't seem to be valid. Insert another one please.")
+		}
+	});
+	xhttpw.send();
+}
+
 function loadWorkspaces(){
 	xhttpw = new XMLHttpRequest();
 	xhttpw.open("GET", toggl_api_uri+"workspaces", true);
-	setAuthorization(xhttpw)
+	setAuthorization(xhttpw, api_token)
 	xhttpw.addEventListener("load", processWorkspaces);
 	xhttpw.addEventListener("progress", showProgressMsg("get workspaces"));
 	xhttpw.addEventListener("error", showErrorMsg);
@@ -67,7 +84,7 @@ function processWorkspaces(){
 function loadWorkspaceProjects(w_id){
 	xhttpp = new XMLHttpRequest();
 	xhttpp.open("GET", toggl_api_uri+"workspaces/"+w_id+"/projects", true);
-	setAuthorization(xhttpp)
+	setAuthorization(xhttpp, api_token)
 	xhttpp.addEventListener("load", processProject);
 	xhttpp.addEventListener("progress", showProgressMsg("get projects"));
 	xhttpp.addEventListener("error", showErrorMsg);
@@ -95,7 +112,7 @@ function processProject(){
 function loadWorkspaceClients(w_id){
 	xhttpc = new XMLHttpRequest();
 	xhttpc.open("GET", toggl_api_uri+"workspaces/"+w_id+"/clients", true);
-	setAuthorization(xhttpc)
+	setAuthorization(xhttpc, api_token)
 	xhttpc.addEventListener("load", processClients);
 	xhttpc.addEventListener("progress", showProgressMsg("get clients"));
 	xhttpc.addEventListener("error", showErrorMsg);
@@ -126,7 +143,7 @@ function loadTimeEntries() {
 			 "end_date=" + encodeURIComponent(end_date);
 	xhttpt = new XMLHttpRequest();
 	xhttpt.open("GET", toggl_api_uri+"time_entries?"+params, true);
-	setAuthorization(xhttpt);
+	setAuthorization(xhttpt, api_token);
 	xhttpt.addEventListener("load", processTimeEntries);
 	xhttpt.addEventListener("progress", showProgressMsg("time entries", start_date));
 	xhttpt.addEventListener("error", showErrorMsg);
@@ -138,17 +155,21 @@ function processTimeEntries() {
 	if(xhttpt.readyState === 4 && xhttpt.status === 200){
 		//console.log("time entries request successfully loaded");
 		var respj = JSON.parse(xhttpt.responseText);
-		for(i=0; i < respj.length; i++){
-			time_entry = Object();
-			time_entry.id = respj[i]["id"];
-			time_entry.wid = respj[i]["wid"];
-			time_entry.pid = respj[i]["pid"];
-			time_entry.duration = respj[i]["duration"];
-			time_entry.description = respj[i]["description"];
-			time_entry.tags = respj[i]["tags"];
-			time_entries.push(time_entry);
+		if(respj.length > 0){
+			for(i=0; i < respj.length; i++){
+				time_entry = Object();
+				time_entry.id = respj[i]["id"];
+				time_entry.wid = respj[i]["wid"];
+				time_entry.pid = respj[i]["pid"];
+				time_entry.duration = respj[i]["duration"];
+				time_entry.description = respj[i]["description"];
+				time_entry.tags = respj[i]["tags"];
+				time_entries.push(time_entry);
+			}
+			assembleTimeSheet();
+		} else {
+			alert("No timesheet to submit for date: "+timesheetDate);
 		}
-		assembleTimeSheet();
 	} else {
 		//console.log("time entries request loaded with state: "+xhttp.readyState+", status: "+xhttp.status);
 	}
@@ -266,25 +287,43 @@ chrome.runtime.onMessage.addListener(function(request) {
 	}
 });
 
+function manageTokenAndDate(dateInput, tokenInput){
+	chrome.cookies.get({"url": bridgedomain, "name": 'tkn'}, function(cookieToken) {
+		if(!cookieToken && !tokenInput) {
+			alert("No token found. Please reload the page to insert your Toggl token");
+		} else if (!cookieToken && tokenInput) {
+			console.log("no saved token and new token -> testing new token");
+			testTokenAndStart(tokenInput, dateInput);
+		} else if (cookieToken && !tokenInput || cookieToken.value === tokenInput){
+			console.log("saved token and no new token -> creating timesheet");
+			api_token = cookieToken.value;
+			createTimesheet(dateInput);
+		} else if(cookieToken.value != tokenInput){ //	cookie, input
+			console.log("saved token "+cookieToken.value+" != new token "+tokenInput+" -> testing new token");
+			testTokenAndStart(tokenInput, dateInput);
+		} 
+	});
+}
 
+/*
 function setUserInput(dateInput, tokenInput) {
-	if(tokenInput){
-		api_token = tokenInput;// using just inserted token and saving it for a year
-		chrome.cookies.set({ url: bridgedomain, 
-			name: "tkn", 
-			value: tokenInput, 
-			expirationDate: (new Date().getTime()/1000) + 3600 * 24 * 365 
-		});
-	} else {
-		chrome.cookies.get({"url": bridgedomain, "name": 'tkn'}, function(cookieToken) {
-			if(cookieToken) {
-				console.log("token found: "+cookieToken.value);
-				api_token = cookieToken.value;
+	chrome.cookies.get({"url": bridgedomain, "name": 'tkn'}, function(cookieToken) {
+		if(cookieToken) {
+			console.log("token found: "+cookieToken.value);
+			api_token = cookieToken.value;
+		} else {
+			if(tokenInput){
+				api_token = tokenInput;// using just inserted token and saving it for a year
+				chrome.cookies.set({ url: bridgedomain, 
+					name: "tkn", 
+					value: tokenInput, 
+					expirationDate: (new Date().getTime()/1000) + 3600 * 24 * 365 
+				});
 			} else {
 				alert("No token found. Please insert your Toggl token");
 			}
-		});
-	}
+		}
+	});
 	// start the whole thing
 	if(api_token && dateInput){
 		console.log("creating timesheet for date "+dateInput);
@@ -294,7 +333,35 @@ function setUserInput(dateInput, tokenInput) {
 		loadWorkspaces();
 	}
 }
+*/
+function createTimesheet(datestring){
+	console.log("createTimesheet for "+datestring);
+	if(api_token){
+		if(datestring){
+			console.log("creating timesheet for date "+datestring);
+			formatTimesheetDate(datestring);
+			loadWorkspaces();
+		} else {
+			timesheetDate = new Date();
+		}
+		loadWorkspaces();
+	}
+}
 
+function formatTimesheetDate(datestring){
+	timesheetDate = new Date(parseInt(datestring.substring(0,4)), 
+		parseInt(datestring.substring(5,7))-1,
+		parseInt(datestring.substring(8,10)));
+}
+
+function saveTokenForAYear(tk){
+	console.log("Saving token");
+	chrome.cookies.set({ url: bridgedomain, 
+		name: "tkn", 
+		value: tk, 
+		expirationDate: (new Date().getTime()/1000) + 3600 * 24 * 365 
+	});
+}
 
 function getCookies(domain, name, callback) {
 	console.log("getCookies");
