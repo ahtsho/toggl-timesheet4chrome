@@ -25,6 +25,6 @@
 		"https://www.toggl.com/*", 
 		"file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html"],
 	"icons":{
-		"128":"icon.png"
+		"128":"toggltimesheet-128.png"
 	}
 }
