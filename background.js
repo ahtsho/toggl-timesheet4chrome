@@ -256,37 +256,6 @@ function convertToQuarters(minutes){
 	return m;
 }
 
-
-
-chrome.tabs.onUpdated.addListener(function(){
-	chrome.tabs.getSelected(null, function(tab){
-		if (_ENV_==='dev'){
-			timesheetURL = 'file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html';
-		} 
-		if(tab.url === timesheetURL){
-			currentTab = tab;
-			//loadWorkspaces();
-		}
-	});
-});
-
-chrome.runtime.onMessage.addListener(function(request) {
-	if (request.type === 'change_date') {
-		chrome.tabs.create({
-			url: chrome.extension.getURL('dialog.html'),
-			active: false
-		}, function(tab) {
-			chrome.windows.create({
-				tabId: tab.id,
-				type: 'popup',
-				focused: true,
-				height:400,
-				width:400
-			});
-		});
-	}
-});
-
 function manageTokenAndDate(dateInput, tokenInput){
 	chrome.cookies.get({"url": bridgedomain, "name": 'tkn'}, function(cookieToken) {
 		if(!cookieToken && !tokenInput) {
@@ -342,4 +311,39 @@ function getCookies(domain, name, callback) {
 		}
 	});
 }
+/*
+chrome.tabs.onUpdated.addListener(function(){
+	chrome.tabs.getSelected(null, function(tab){
+		chrome.pageAction.show(tabId);
+		if (_ENV_==='dev'){
+			timesheetURL = 'file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html';
+		}
+		alert(tab.url);
+		if(tab.url === timesheetURL){
+			chrome.pageAction.show(tabId);
+			//loadWorkspaces();
+		}
+	});
+});
+*/
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+	console.log("on message");
+	          chrome.pageAction.show(sender.tab.id);
+
+	if (request.type === 'change_date') {
+		chrome.tabs.create({
+			url: chrome.extension.getURL('dialog.html'),
+			active: false
+		}, function(tab) {
+			currentTab = tab;
+			chrome.windows.create({
+				tabId: tab.id,
+				type: 'popup',
+				focused: true,
+				height:300,
+				width:350
+			});
+		});
+	}
+});
 

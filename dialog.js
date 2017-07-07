@@ -1,3 +1,32 @@
+function submitDateAndToken(){
+	var newDate = document.getElementById('new_date').value;
+	var token = document.getElementById('token').value;
+	if(token){
+		chrome.runtime.getBackgroundPage(function(bgWindow) {
+			bgWindow.manageTokenAndDate(newDate, token);
+			window.close();
+		});
+	} else {
+		alert("Please insert a valid Toggl token.");
+	}
+}
+
+document.getElementById("sumitButton").onclick = function(e) {
+	e.preventDefault();
+	var newDate = document.getElementById('new_date').value;
+	var token = document.getElementById('token').value;
+	if(token){
+		chrome.runtime.getBackgroundPage(function(bgWindow) {
+			bgWindow.manageTokenAndDate(newDate, token);
+			window.close();
+		});
+	} else {
+		alert("Please insert a valid Toggl token.");
+	}
+
+};
+
+
 document.forms[0].onsubmit = function(e) {
 	e.preventDefault();
 	var newDate = document.getElementById('new_date').value;

@@ -6,11 +6,11 @@
 	"content_scripts": [
 		{
 			"matches": ["file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html"],
-			"js": ["content.js","open-dialog.js"]
+			"js": ["content.js","open-dialog.js","dialog.js"]
 		}
 	],
 	"page_action":{
-		"default_icon":"icon.png",
+		"default_icon":"toggltimesheet-128.png",
 		"default_title":"Toggl-Timesheet"
 	},
 	"background" : {
