@@ -5,7 +5,7 @@
 	"description":"Fill out Bridge's timesheet from toggl",
 	"content_scripts": [
 		{
-			"matches": ["file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html"],
+			"matches": ["https://*.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow?*"],
 			"js": ["content.js","open-dialog.js","dialog.js"]
 		}
 	],
@@ -20,10 +20,10 @@
 	"permissions":[
 		"tabs",
 		"cookies",
-		"http://internal1.bridgeconsulting.it/",
+		"http://internal1.bridgeconsulting.it/*",
 		"storage",
 		"https://www.toggl.com/*", 
-		"file:///Users/at/Developement/auto-timesheet/public/Bridge%20portal.html"],
+		"https://*.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow?*"],
 	"icons":{
 		"128":"toggltimesheet-128.png"
 	}

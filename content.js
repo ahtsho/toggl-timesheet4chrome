@@ -24,15 +24,22 @@ function setSubJObOrderSelect(text){
 	subJobOrders.selectedIndex = 0;
 }
 
-for (var i = 0; i < timesheet.length; i++) {
-	document.getElementById('date').value=timesheet[i].date;
-	setSelectOptionByText('activityComboBox',timesheet[i].activity);
-	setSelectOptionByText('companyComboBox',timesheet[i].company);
-	setSelectOptionByText('jobOrdersComboBox',timesheet[i].job_order);
-	setSubJObOrderSelect(timesheet[i].sub_job_order);
-	document.getElementById('description').value=timesheet[i].description;
-	document.getElementById('numberOfHour').value=timesheet[i].number_of_hours;
-	//document.getElementsByClassName('portlet-form-button')[0].click();
+document.getElementById('timeSheetCommand').addEventListener('load', console.log("Finished"));
+
+if(timesheet){
+	for (var i = 0; i < timesheet.length; i++) {
+		console.log("submitting data");
+		document.getElementById('date').value=timesheet[i].date;
+		setSelectOptionByText('activityComboBox',timesheet[i].activity);
+		setSelectOptionByText('companyComboBox',timesheet[i].company);
+		setSelectOptionByText('jobOrdersComboBox',timesheet[i].job_order);
+		setSubJObOrderSelect(timesheet[i].sub_job_order);
+		document.getElementById('description').value=timesheet[i].description;
+		document.getElementById('numberOfHour').value=timesheet[i].number_of_hours;
+		document.getElementsByClassName('portlet-form-button')[0].click();
+//		document.getElementsByClassName('portlet-form-button')[0].disabled=true;
+		console.log("form submit "+i);
+	}
 }
 
 

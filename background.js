@@ -1,7 +1,7 @@
 /*
 *	Author: Ahadu Tsegaye: 23/06/2017
 */
-var _ENV_ = 'dev';
+var _ENV_ = '';
 var api_token = '';
 var toggl_api_uri = "https://www.toggl.com/api/v8/";
 var timesheetURL = 'internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow';
@@ -195,6 +195,7 @@ function getNameById (list, aid, idName) {
 var currentTab = Object();
 
 function assembleTimeSheet(){
+	timesheet = new Array();
 	for (i=0; i < time_entries.length; i++){
 		var timesheet_entry = new Object();
 		timesheet_entry.date = formatDate(timesheetDate,'dmy','/'); 
