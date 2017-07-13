@@ -6,7 +6,6 @@ function setSelectOptionByText(selectid, text){
 			break;
 		}
 	}
-
 	if(select.selectedIndex === 0){
 		select.selectedIndex = 49;//"VARIE - DA DESCRIVERE"
 	}
@@ -25,15 +24,46 @@ function setSubJObOrderSelect(text){
 }
 
 var i = 0;
-if(timesheet){
-	submitTimesheetRow(timesheet[0]);
+$(document).ready(function() {
+	console.log("timesheet")
+	console.log(timesheet);
+	if(timesheet){
+		console.log("doc ready -> populate form with ts[0]")
+		populateFormFileds(timesheet[0]);
+	}
+});
+
+function submitAjax(){
+	$.ajax({
+		type: "POST",
+		data: serializeForm(),
+		url: 'https://internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow?action=1&action=insert-timesheet',
+		success: function(data) {
+			var res = jQuery.parseJSON(data);
+			if(res.readyState==1 && res.status==200){
+				populateFormFileds(timesheet[i]);
+			}
+		},
+		error: function(e) {
+			alert("error "+JSON.stringify(e));
+		}
+	});
+
 }
 
-document.getElementById('timeSheetCommand').addEventListener('load', submitTimesheetRow(timesheet[i]));
+function serializeForm(){
+	var result = { };
+	$.each($('#timeSheetCommand').serializeArray(),function() {
+		result[this.name] = this.value;
+	});
+	console.log(result);
+}
 
-function submitTimesheetRow(timesheetRow){
+
+function populateFormFileds(timesheetRow){
+	console.log("[populateFormFileds] i="+i);
 	if(i<timesheet.length){
-		console.log("submitting data");
+		console.log("submitting data "+JSON.stringify(timesheetRow));
 		document.getElementById('date').value=timesheetRow.date;
 		setSelectOptionByText('activityComboBox',timesheetRow.activity);
 		setSelectOptionByText('companyComboBox',timesheetRow.company);
@@ -41,7 +71,7 @@ function submitTimesheetRow(timesheetRow){
 		setSubJObOrderSelect(timesheetRow.sub_job_order);
 		document.getElementById('description').value=timesheetRow.description;
 		document.getElementById('numberOfHour').value=timesheetRow.number_of_hours;
-		document.getElementsByClassName('portlet-form-button')[0].click();
+		submitAjax();
 		i++;
 	} else {
 		return;
