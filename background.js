@@ -240,6 +240,9 @@ function formatDate(adate, order, separator){
 function convertSecondsToSexagesimals(durationSec){
 	var h_mtmp =  (durationSec / 3600).toString().split('.');
 	var m = convertToQuarters(parseInt(h_mtmp[1].slice(0,2)));
+	if(m===0){
+		return h_mtmp[0];
+	}
 	return h_mtmp[0] + "," + m;
 }
 

@@ -38,9 +38,8 @@ function submitAjax(){
 		type: "POST",
 		data: serializeForm(),
 		url: 'https://internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow?action=1&action=insert-timesheet',
-		success: function(data) {
-			var res = jQuery.parseJSON(data);
-			if(res.readyState==1 && res.status==200){
+		success: function(data, textStatus, xhr) {
+			if(xhr.status==200){
 				populateFormFileds(timesheet[i]);
 			}
 		},
@@ -54,9 +53,10 @@ function submitAjax(){
 function serializeForm(){
 	var result = { };
 	$.each($('#timeSheetCommand').serializeArray(),function() {
+		//console.log(this.name+":"+this.value)
 		result[this.name] = this.value;
 	});
-	console.log(result);
+	return result;
 }
 
 
