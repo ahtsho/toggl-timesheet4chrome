@@ -74,6 +74,7 @@ function populateFormFileds(timesheetRow){
 		submitAjax();
 		i++;
 	} else {
+		alert("That's it for today folks!")
 		return;
 	}
 }

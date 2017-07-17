@@ -109,6 +109,7 @@ function processProject(){
 	}
 }
 
+
 function loadWorkspaceClients(w_id){
 	xhttpc = new XMLHttpRequest();
 	xhttpc.open("GET", toggl_api_uri+"workspaces/"+w_id+"/clients", true);
@@ -151,6 +152,27 @@ function loadTimeEntries() {
 	xhttpt.send();
 }
 
+
+function mergeInterruptedActivitiesAndPush(entry){
+	var idx = findEntry(entry);
+	if(idx>0){
+		console.log("Merging interrupted task "+JSON.stringify(time_entries[i]));
+		time_entries[idx]["duration"] += entry["duration"];
+	} else {
+		time_entries.push(entry);
+	}
+}
+
+function findEntry(entry){
+	for(var i =0; i< time_entries.length; i++){
+		if(time_entries[i]["description"]===entry["description"] && 
+			time_entries[i]["tags"][0]===entry["tags"][0]){
+			return i;
+		} 
+	}
+	return -1;
+}
+
 function processTimeEntries() {
 	if(xhttpt.readyState === 4 && xhttpt.status === 200){
 		//console.log("time entries request successfully loaded");
@@ -164,7 +186,7 @@ function processTimeEntries() {
 				time_entry.duration = respj[i]["duration"];
 				time_entry.description = respj[i]["description"];
 				time_entry.tags = respj[i]["tags"];
-				time_entries.push(time_entry);
+				mergeInterruptedActivitiesAndPush(time_entry);
 			}
 			assembleTimeSheet();
 		} else {
@@ -199,7 +221,11 @@ function assembleTimeSheet(){
 	for (i=0; i < time_entries.length; i++){
 		var timesheet_entry = new Object();
 		timesheet_entry.date = formatDate(timesheetDate,'dmy','/'); 
-		timesheet_entry.activity = time_entries[i]["tags"][0];//tags
+		if(time_entries[i]["tags"]){
+			timesheet_entry.activity = time_entries[i]["tags"][0]
+		} else {
+			timesheet_entry.activity = "VARIE - DA DESCRIVERE";
+		};//tags
 		timesheet_entry.company = getNameById(clients,time_entries[i]["wid"], "wid");//client
 		timesheet_entry.job_order = getNameById(workspaces,time_entries[i]["wid"], "id");//workspace
 		timesheet_entry.sub_job_order = getNameById(projects,time_entries[i]["pid"], "id");//project
