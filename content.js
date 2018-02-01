@@ -37,7 +37,7 @@ function submitAjax(){
 	$.ajax({
 		type: "POST",
 		data: serializeForm(),
-		url: 'https://internal1.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow?action=1&action=insert-timesheet',
+		url: 'https://apps.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow?action=1&action=insert-timesheet',
 		success: function(data, textStatus, xhr) {
 			if(xhr.status==200){
 				populateFormFileds(timesheet[i]);

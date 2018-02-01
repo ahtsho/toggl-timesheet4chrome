@@ -42,7 +42,7 @@ document.forms[0].onsubmit = function(e) {
 
 };
 
-chrome.cookies.get({"url": 'http://internal1.bridgeconsulting.it', "name": 'tkn'}, function(cookieToken) {
+chrome.cookies.get({"url": 'http://apps.bridgeconsulting.it', "name": 'tkn'}, function(cookieToken) {
 	if(cookieToken) {
 		console.log("token found: "+cookieToken.value);
 		document.getElementById('token').value = cookieToken.value;

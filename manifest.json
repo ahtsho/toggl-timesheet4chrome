@@ -21,7 +21,7 @@
 	"permissions":[
 		"tabs",
 		"cookies",
-		"http://internal1.bridgeconsulting.it/*",
+		"http://apps.bridgeconsulting.it/*",
 		"storage",
 		"https://www.toggl.com/*", 
 		"https://*.bridgeconsulting.it/authsec/portal/Bridge/default/BalanceOrderPortletWindow*",
