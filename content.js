@@ -61,7 +61,7 @@ function serializeForm(){
 
 
 function populateFormFileds(timesheetRow){
-	console.log("[populateFormFileds] i="+i);
+	console.log("[populateFormFileds-new] i="+i);
 	if(i<timesheet.length){
 		console.log("submitting data "+JSON.stringify(timesheetRow));
 		document.getElementById('date').value=timesheetRow.date;
@@ -69,6 +69,9 @@ function populateFormFileds(timesheetRow){
 		setSelectOptionByText('companyComboBox',timesheetRow.company);
 		setSelectOptionByText('jobOrdersComboBox',timesheetRow.job_order);
 		setSubJObOrderSelect(timesheetRow.sub_job_order);
+		if(timesheetRow.ticketInput){
+			document.getElementById('ticketInput').value=timesheetRow.ticketInput;
+		}
 		document.getElementById('description').value=timesheetRow.description;
 		document.getElementById('numberOfHour').value=timesheetRow.number_of_hours;
 		submitAjax();

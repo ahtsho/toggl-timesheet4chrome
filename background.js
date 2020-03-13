@@ -177,6 +177,7 @@ function processTimeEntries() {
 	if(xhttpt.readyState === 4 && xhttpt.status === 200){
 		//console.log("time entries request successfully loaded");
 		var respj = JSON.parse(xhttpt.responseText);
+    var re = /CTVDG-\d+\s/g;
 		if(respj.length > 0){
 			for(i=0; i < respj.length; i++){
 				time_entry = Object();
@@ -184,7 +185,13 @@ function processTimeEntries() {
 				time_entry.wid = respj[i]["wid"];
 				time_entry.pid = respj[i]["pid"];
 				time_entry.duration = respj[i]["duration"];
-				time_entry.description = respj[i]["description"];
+        var text = respj[i]["description"];
+        if(text.match(re)){//has jira code
+        	time_entry.ticketInput =text.match(re)[0];
+        	time_entry.description = text.split(re)[1];
+        } else{
+        	time_entry.description = text;
+        }
 				time_entry.tags = respj[i]["tags"];
 				mergeInterruptedActivitiesAndPush(time_entry);
 			}
@@ -229,6 +236,9 @@ function assembleTimeSheet(){
 		timesheet_entry.company = getNameById(clients,time_entries[i]["wid"], "wid");//client
 		timesheet_entry.job_order = getNameById(workspaces,time_entries[i]["wid"], "id");//workspace
 		timesheet_entry.sub_job_order = getNameById(projects,time_entries[i]["pid"], "id");//project
+		if(time_entries[i]["ticketInput"]){
+			timesheet_entry.ticketInput = time_entries[i]["ticketInput"];
+		}
 		timesheet_entry.description = time_entries[i]["description"];//description
 		timesheet_entry.number_of_hours = convertSecondsToSexagesimals(time_entries[i]["duration"]);//duration
 		timesheet.push(timesheet_entry)	
